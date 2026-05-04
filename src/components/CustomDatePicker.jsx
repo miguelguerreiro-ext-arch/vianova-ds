@@ -238,45 +238,96 @@ function resampleBars(bars, maxBars) {
 const MAX_DISPLAY_BARS = { day: 146, week: 105, month: 24 }
 
 /* ── Distribution Histogram ── */
+// Quarterly X-axis ticks across the 730-day range
+const X_TICKS = [
+  { label: "Jan '25", day: 0 },
+  { label: "Apr '25", day: 90 },
+  { label: "Jul '25", day: 181 },
+  { label: "Oct '25", day: 274 },
+  { label: "Jan '26", day: 365 },
+  { label: "Apr '26", day: 455 },
+  { label: "Jul '26", day: 546 },
+  { label: "Oct '26", day: 638 },
+  { label: "Dec '26", day: 729 },
+]
+
+const Y_AXIS_W = 28  // px reserved for the ordinate labels
+
 function DataDistribution({ sliderMin, sliderMax, totalDays, onSliderChange, interval }) {
   const logical = aggregateBars(interval)
   const bars    = resampleBars(logical, MAX_DISPLAY_BARS[interval])
   const maxVal  = Math.max(...bars.map(b => b.value))
   const gap     = interval === 'month' ? 3 : interval === 'week' ? 1 : 0
 
+  const dim  = { color: 'rgba(255,255,255,0.22)', fontSize: '0.6rem', lineHeight: 1 }
+  const grid = { position: 'absolute', left: 0, right: 0, height: 1, backgroundColor: 'rgba(255,255,255,0.06)', pointerEvents: 'none' }
+
   return (
     <div style={{ marginBottom: 4 }}>
-      {/* bars */}
-      <div style={{ display: 'flex', alignItems: 'flex-end', height: 64, gap, marginBottom: 8 }}>
-        {bars.map((bar, i) => {
-          const active = bar.endDay >= sliderMin && bar.startDay <= sliderMax
+      <div style={{ display: 'flex', gap: 6 }}>
+
+        {/* ── Ordinate (Y-axis) ── */}
+        <div style={{ width: Y_AXIS_W, flexShrink: 0, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', alignItems: 'flex-end', height: 64 }}>
+          <span style={dim}>max</span>
+          <span style={dim}>50%</span>
+          <span style={dim}>0</span>
+        </div>
+
+        {/* ── Chart area ── */}
+        <div style={{ flex: 1, position: 'relative', height: 64 }}>
+          {/* Grid lines */}
+          <div style={{ ...grid, top: 0 }} />
+          <div style={{ ...grid, top: '50%' }} />
+          <div style={{ ...grid, bottom: 0 }} />
+
+          {/* Bars */}
+          <div style={{ display: 'flex', alignItems: 'flex-end', height: '100%', gap, position: 'relative', zIndex: 1 }}>
+            {bars.map((bar, i) => {
+              const active = bar.endDay >= sliderMin && bar.startDay <= sliderMax
+              return (
+                <div key={i} style={{
+                  flex: 1,
+                  height: `${(bar.value / maxVal) * 100}%`,
+                  backgroundColor: active ? 'var(--primary)' : 'rgba(255,255,255,0.12)',
+                  borderRadius: '2px 2px 0 0',
+                  transition: 'background-color 80ms',
+                }} />
+              )
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* ── Slider (inset to align with chart area) ── */}
+      <div style={{ paddingLeft: Y_AXIS_W + 6, marginTop: 8 }}>
+        <RangeSlider
+          min={0} max={totalDays - 1}
+          valueMin={sliderMin} valueMax={sliderMax}
+          onChange={onSliderChange}
+        />
+      </div>
+
+      {/* ── Abscissa (X-axis) ── */}
+      <div style={{ paddingLeft: Y_AXIS_W + 6, position: 'relative', height: 14, marginTop: 5 }}>
+        {X_TICKS.map(({ label, day }) => {
+          const pct = (day / (totalDays - 1)) * 100
           return (
-            <div
-              key={i}
-              style={{
-                flex: 1,
-                height: `${(bar.value / maxVal) * 100}%`,
-                backgroundColor: active ? 'var(--primary)' : 'rgba(255,255,255,0.12)',
-                borderRadius: '2px 2px 0 0',
-                transition: 'background-color 80ms',
-              }}
-            />
+            <span key={label} style={{
+              ...dim,
+              position: 'absolute',
+              left: `${pct}%`,
+              transform: pct === 0 ? 'none' : pct === 100 ? 'translateX(-100%)' : 'translateX(-50%)',
+              whiteSpace: 'nowrap',
+            }}>
+              {label}
+            </span>
           )
         })}
       </div>
-      {/* slider */}
-      <RangeSlider
-        min={0} max={totalDays - 1}
-        valueMin={sliderMin} valueMax={sliderMax}
-        onChange={onSliderChange}
-      />
-      {/* labels */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6, fontSize: '0.68rem', color: 'rgba(255,255,255,0.4)' }}>
-        <span>Jan 1 '25</span>
-        <span style={{ color: 'rgba(255,255,255,0.65)' }}>
-          {indexToLabel(sliderMin)} – {indexToLabel(sliderMax)}
-        </span>
-        <span>Dec 31 '26</span>
+
+      {/* Selected range label */}
+      <div style={{ paddingLeft: Y_AXIS_W + 6, marginTop: 3, textAlign: 'center', fontSize: '0.68rem', color: 'rgba(255,255,255,0.55)' }}>
+        {indexToLabel(sliderMin)} – {indexToLabel(sliderMax)}
       </div>
     </div>
   )
