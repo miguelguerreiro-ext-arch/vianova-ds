@@ -316,11 +316,41 @@ function HourSelect({ placeholder, value, onChange }) {
   )
 }
 
+/* ── Picker Dropdown ── */
+function PickerDropdown({ onClose, children }) {
+  return (
+    <>
+      <div
+        style={{ position: 'fixed', inset: 0, zIndex: 99 }}
+        onClick={e => { e.stopPropagation(); onClose() }}
+      />
+      <div
+        onClick={e => e.stopPropagation()}
+        style={{
+          position: 'absolute', top: 'calc(100% + 6px)',
+          left: '50%', transform: 'translateX(-50%)',
+          zIndex: 100,
+          backgroundColor: '#2a2a2e',
+          border: '1px solid rgba(255,255,255,0.12)',
+          borderRadius: 10,
+          padding: 8,
+          boxShadow: '0 12px 40px rgba(0,0,0,0.55)',
+        }}
+      >
+        {children}
+      </div>
+    </>
+  )
+}
+
 /* ── Main Component ── */
 export default function CustomDatePicker({ onClose, onApply }) {
   // Calendar state — left shows Jan 2025, right shows Feb 2025
   const [leftYear, setLeftYear] = useState(2025)
   const [leftMonth, setLeftMonth] = useState(0) // Jan
+
+  // Which picker is open: null | 'left-month' | 'left-year' | 'right-month' | 'right-year'
+  const [openPicker, setOpenPicker] = useState(null)
 
   const [startDate, setStartDate] = useState(new Date(2025, 3, 1))   // Apr 1 2025
   const [endDate, setEndDate] = useState(new Date(2025, 8, 30))      // Sep 30 2025
@@ -360,6 +390,31 @@ export default function CustomDatePicker({ onClose, onApply }) {
     if (!canGoNext) return
     const n = addMonths(leftYear, leftMonth, 1)
     setLeftYear(n.year); setLeftMonth(n.month)
+  }
+
+  // Left calendar month/year pickers
+  function selectLeftMonth(m) {
+    if (leftYear === 2026 && m === 11) return // right would be Jan 2027, out of range
+    setLeftMonth(m); setOpenPicker(null)
+  }
+  function selectLeftYear(y) {
+    let m = leftMonth
+    if (y === 2026 && m > 10) m = 10 // clamp so right stays ≤ Dec 2026
+    setLeftYear(y); setLeftMonth(m); setOpenPicker(null)
+  }
+
+  // Right calendar month/year pickers — derive left = right − 1
+  function selectRightMonth(m) {
+    if (right.year === 2025 && m === 0) return // left would be Dec 2024, out of range
+    const newLeft = addMonths(right.year, m, -1)
+    setLeftYear(newLeft.year); setLeftMonth(newLeft.month); setOpenPicker(null)
+  }
+  function selectRightYear(y) {
+    const newLeft = addMonths(y, right.month, -1)
+    if (newLeft.year < 2025) { setLeftYear(2025); setLeftMonth(0) }
+    else if (newLeft.year > 2026 || (newLeft.year === 2026 && newLeft.month > 10)) { setLeftYear(2026); setLeftMonth(10) }
+    else { setLeftYear(newLeft.year); setLeftMonth(newLeft.month) }
+    setOpenPicker(null)
   }
 
   function handleDayClick(date) {
@@ -420,19 +475,90 @@ export default function CustomDatePicker({ onClose, onApply }) {
 
       {/* Calendars */}
       <div style={{ marginBottom: 4 }}>
-        {/* Shared header row: arrow · left month · right month · arrow */}
+        {/* Shared header row: arrow · left month/year · right month/year · arrow */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
           <button onClick={prevMonth} disabled={!canGoPrev} style={{ background: 'rgba(255,255,255,0.06)', border: 'none', borderRadius: 'var(--radius-sm)', cursor: canGoPrev ? 'pointer' : 'default', color: canGoPrev ? 'rgba(255,255,255,0.6)' : 'rgba(255,255,255,0.2)', width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
             <ChevronLeft size={15} />
           </button>
-          <div style={{ flex: 1, display: 'flex' }}>
-            <div style={{ flex: 1, textAlign: 'center', fontWeight: 600, fontSize: '0.88rem', color: '#fff' }}>
-              {MONTHS[leftMonth]} {leftYear}
-            </div>
-            <div style={{ flex: 1, textAlign: 'center', fontWeight: 600, fontSize: '0.88rem', color: '#fff' }}>
-              {MONTHS[right.month]} {right.year}
-            </div>
-          </div>
+
+          {/* Left calendar title */}
+          {[{ side: 'left', month: leftMonth, year: leftYear, onMonth: selectLeftMonth, onYear: selectLeftYear },
+            { side: 'right', month: right.month, year: right.year, onMonth: selectRightMonth, onYear: selectRightYear }
+          ].map(({ side, month, year, onMonth, onYear }) => {
+            const btnStyle = {
+              background: 'none', border: 'none', padding: '2px 4px',
+              fontFamily: 'inherit', fontWeight: 600, fontSize: '0.88rem', color: '#fff',
+              cursor: 'pointer', borderRadius: 4,
+              borderBottom: '1px dotted rgba(255,255,255,0.3)',
+              lineHeight: 1,
+            }
+            const MONTH_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+            const YEARS = [2025, 2026]
+            return (
+              <div key={side} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
+                {/* Month picker */}
+                <div style={{ position: 'relative' }}>
+                  <button
+                    style={btnStyle}
+                    onClick={e => { e.stopPropagation(); setOpenPicker(p => p === `${side}-month` ? null : `${side}-month`) }}
+                  >
+                    {MONTHS[month]}
+                  </button>
+                  {openPicker === `${side}-month` && (
+                    <PickerDropdown onClose={() => setOpenPicker(null)}>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 3, width: 162 }}>
+                        {MONTHS.map((m, i) => {
+                          const disabled = (side === 'left' && year === 2026 && i === 11) ||
+                                           (side === 'right' && year === 2025 && i === 0)
+                          const active = i === month
+                          return (
+                            <button key={m} disabled={disabled} onClick={() => onMonth(i)} style={{
+                              padding: '7px 4px', fontSize: '0.75rem', borderRadius: 6,
+                              border: 'none', cursor: disabled ? 'not-allowed' : 'pointer',
+                              fontFamily: 'inherit', fontWeight: active ? 600 : 400,
+                              backgroundColor: active ? 'var(--primary)' : 'transparent',
+                              color: disabled ? 'rgba(255,255,255,0.2)' : active ? '#fff' : 'rgba(255,255,255,0.7)',
+                              transition: 'background-color 100ms',
+                            }}>
+                              {MONTH_SHORT[i]}
+                            </button>
+                          )
+                        })}
+                      </div>
+                    </PickerDropdown>
+                  )}
+                </div>
+
+                {/* Year picker */}
+                <div style={{ position: 'relative' }}>
+                  <button
+                    style={btnStyle}
+                    onClick={e => { e.stopPropagation(); setOpenPicker(p => p === `${side}-year` ? null : `${side}-year`) }}
+                  >
+                    {year}
+                  </button>
+                  {openPicker === `${side}-year` && (
+                    <PickerDropdown onClose={() => setOpenPicker(null)}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 3, width: 80 }}>
+                        {YEARS.map(y => (
+                          <button key={y} onClick={() => onYear(y)} style={{
+                            padding: '7px 8px', fontSize: '0.8rem', borderRadius: 6,
+                            border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontWeight: y === year ? 600 : 400,
+                            backgroundColor: y === year ? 'var(--primary)' : 'transparent',
+                            color: y === year ? '#fff' : 'rgba(255,255,255,0.7)',
+                            transition: 'background-color 100ms',
+                          }}>
+                            {y}
+                          </button>
+                        ))}
+                      </div>
+                    </PickerDropdown>
+                  )}
+                </div>
+              </div>
+            )
+          })}
+
           <button onClick={nextMonth} disabled={!canGoNext} style={{ background: 'rgba(255,255,255,0.06)', border: 'none', borderRadius: 'var(--radius-sm)', cursor: canGoNext ? 'pointer' : 'default', color: canGoNext ? 'rgba(255,255,255,0.6)' : 'rgba(255,255,255,0.2)', width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
             <ChevronRight size={15} />
           </button>
