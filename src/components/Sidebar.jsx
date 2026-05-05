@@ -14,16 +14,19 @@ export default function Sidebar({ sections, active, onSelect, theme, onThemeChan
       style={{ backgroundColor: 'var(--background)', borderColor: 'var(--border)' }}
     >
       {/* Wordmark */}
-      <div className="px-6 py-6 border-b" style={{ borderColor: 'var(--border)' }}>
-        <span
-          className="text-sm font-semibold tracking-widest uppercase"
-          style={{ color: 'var(--primary)' }}
-        >
-          Vianova
-        </span>
-        <p className="text-xs mt-0.5" style={{ color: 'var(--muted-foreground)' }}>
-          Design System
-        </p>
+      <div className="px-6 py-5 border-b" style={{ borderColor: 'var(--border)', display: 'flex', alignItems: 'center', gap: 10 }}>
+        <img src="/logo.png" alt="Vianova DS" style={{ width: 32, height: 32, flexShrink: 0 }} />
+        <div>
+          <span
+            className="text-sm font-semibold tracking-widest uppercase"
+            style={{ color: 'var(--primary)' }}
+          >
+            Vianova
+          </span>
+          <p className="text-xs mt-0.5" style={{ color: 'var(--muted-foreground)' }}>
+            Design System
+          </p>
+        </div>
       </div>
 
       {/* Nav */}
