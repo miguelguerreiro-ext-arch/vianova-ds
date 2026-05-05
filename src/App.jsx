@@ -19,13 +19,17 @@ const SECTIONS = [
   { id: 'components', label: 'Components' },
 ]
 
+const THEMES = ['', 'dark', 'dark-stone', 'dark-slate', 'aisin', 'here']
+
 export default function App() {
-  const [dark, setDark] = useState(false)
+  const [theme, setTheme] = useState('')
   const [active, setActive] = useState('color')
 
   useEffect(() => {
-    document.documentElement.classList.toggle('dark', dark)
-  }, [dark])
+    const root = document.documentElement
+    THEMES.forEach(t => { if (t) root.classList.remove(t) })
+    if (theme) root.classList.add(theme)
+  }, [theme])
 
   return (
     <div className="flex min-h-screen" style={{ backgroundColor: 'var(--background)', color: 'var(--foreground)' }}>
@@ -33,16 +37,16 @@ export default function App() {
         sections={SECTIONS}
         active={active}
         onSelect={setActive}
-        dark={dark}
-        onToggleDark={() => setDark(d => !d)}
+        theme={theme}
+        onThemeChange={setTheme}
       />
       <main className="flex-1 ml-56 px-12 py-12 max-w-5xl">
-        {active === 'color' && <ColorSection />}
+        {active === 'color'      && <ColorSection />}
         {active === 'typography' && <TypographySection />}
-        {active === 'spacing' && <SpacingSection />}
-        {active === 'radius' && <RadiusSection />}
-        {active === 'motion' && <MotionSection />}
-        {active === 'iconography' && <IconographySection />}
+        {active === 'spacing'    && <SpacingSection />}
+        {active === 'radius'     && <RadiusSection />}
+        {active === 'motion'     && <MotionSection />}
+        {active === 'iconography'&& <IconographySection />}
         {active === 'components' && <ComponentsSection />}
       </main>
     </div>

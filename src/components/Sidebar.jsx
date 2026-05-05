@@ -1,19 +1,23 @@
-import { Moon, Sun } from 'lucide-react'
+const THEME_OPTIONS = [
+  { value: '',           label: 'Light' },
+  { value: 'dark',       label: 'Dark' },
+  { value: 'dark-stone', label: 'Dark Stone' },
+  { value: 'dark-slate', label: 'Dark Slate' },
+  { value: 'aisin',      label: 'Aisin' },
+  { value: 'here',       label: 'HERE' },
+]
 
-export default function Sidebar({ sections, active, onSelect, dark, onToggleDark }) {
+export default function Sidebar({ sections, active, onSelect, theme, onThemeChange }) {
   return (
     <aside
       className="fixed top-0 left-0 h-screen w-56 flex flex-col border-r"
-      style={{
-        backgroundColor: 'var(--background)',
-        borderColor: 'var(--border)',
-      }}
+      style={{ backgroundColor: 'var(--background)', borderColor: 'var(--border)' }}
     >
       {/* Wordmark */}
       <div className="px-6 py-6 border-b" style={{ borderColor: 'var(--border)' }}>
         <span
           className="text-sm font-semibold tracking-widest uppercase"
-          style={{ color: 'var(--vn-brand)' }}
+          style={{ color: 'var(--primary)' }}
         >
           Vianova
         </span>
@@ -47,21 +51,42 @@ export default function Sidebar({ sections, active, onSelect, dark, onToggleDark
         ))}
       </nav>
 
-      {/* Dark mode toggle */}
+      {/* Theme selector */}
       <div className="px-4 py-4 border-t" style={{ borderColor: 'var(--border)' }}>
-        <button
-          onClick={onToggleDark}
-          className="flex items-center gap-2 w-full px-3 py-2 text-sm rounded transition-colors"
-          style={{
-            borderRadius: 'var(--radius-md)',
-            backgroundColor: 'var(--secondary)',
-            color: 'var(--secondary-foreground)',
-            transitionDuration: 'var(--motion-fast)',
-          }}
-        >
-          {dark ? <Sun size={14} /> : <Moon size={14} />}
-          {dark ? 'Light mode' : 'Dark mode'}
-        </button>
+        <p className="text-xs font-medium mb-2 px-1" style={{ color: 'var(--muted-foreground)' }}>
+          Theme
+        </p>
+        <div style={{ position: 'relative' }}>
+          <select
+            value={theme}
+            onChange={e => onThemeChange(e.target.value)}
+            style={{
+              width: '100%',
+              appearance: 'none',
+              padding: '7px 28px 7px 10px',
+              fontSize: '0.8rem',
+              fontFamily: 'inherit',
+              fontWeight: 500,
+              backgroundColor: 'var(--secondary)',
+              color: 'var(--secondary-foreground)',
+              border: '1px solid var(--border)',
+              borderRadius: 'var(--radius-md)',
+              outline: 'none',
+              cursor: 'pointer',
+            }}
+          >
+            {THEME_OPTIONS.map(o => (
+              <option key={o.value} value={o.value}>{o.label}</option>
+            ))}
+          </select>
+          <svg
+            width="12" height="12" viewBox="0 0 12 12"
+            style={{ position: 'absolute', right: 9, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: 'var(--muted-foreground)' }}
+            fill="none" stroke="currentColor" strokeWidth="1.5"
+          >
+            <path d="M2 4l4 4 4-4" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </div>
       </div>
     </aside>
   )
