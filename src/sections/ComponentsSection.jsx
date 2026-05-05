@@ -12,7 +12,7 @@ import {
 } from './codeSnippets'
 
 const DATEPICKER_FIGMA =
-  'https://www.figma.com/embed?embed_host=share&url=https://www.figma.com/design/YZFAMAbSiLQw6ARLwhNnIk/Vianova-DS-%E2%80%93-Custom-Date-Picker?node-id=6-2'
+  'https://www.figma.com/embed?embed_host=share&url=https://www.figma.com/design/YZFAMAbSiLQw6ARLwhNnIk/Vianova-DS-%E2%80%93-Custom-Date-Picker?node-id=17-2'
 
 // ── Group label ───────────────────────────────────────────────────────────────
 function GroupLabel({ children }) {
