@@ -3,7 +3,7 @@ import SectionHeader from '../components/SectionHeader'
 function Swatch({ token, usage }) {
   return (
     <div style={{ borderRadius: 'var(--radius-lg)', border: '1px solid var(--border)', overflow: 'hidden' }}>
-      <div style={{ height: 56, backgroundColor: `var(${token})` }} />
+      <div style={{ height: 56, backgroundColor: `var(--${token})` }} />
       <div style={{ padding: '8px 12px 10px' }}>
         <p style={{ margin: 0, fontSize: '0.72rem', fontWeight: 600, fontFamily: 'monospace', color: 'var(--foreground)' }}>
           --{token}

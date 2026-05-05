@@ -1,3 +1,5 @@
+import logoUrl from '../assets/logo.png'
+
 const THEME_OPTIONS = [
   { value: '',           label: 'Light' },
   { value: 'dark',       label: 'Dark' },
@@ -15,7 +17,7 @@ export default function Sidebar({ sections, active, onSelect, theme, onThemeChan
     >
       {/* Wordmark */}
       <div className="px-6 py-5 border-b" style={{ borderColor: 'var(--border)', display: 'flex', alignItems: 'center', gap: 10 }}>
-        <img src="/logo.png" alt="Vianova DS" style={{ width: 32, height: 32, flexShrink: 0 }} />
+        <img src={logoUrl} alt="Vianova DS" style={{ width: 32, height: 32, flexShrink: 0 }} />
         <div>
           <span
             className="text-sm font-semibold tracking-widest uppercase"
