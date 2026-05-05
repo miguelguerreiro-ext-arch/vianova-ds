@@ -471,15 +471,11 @@ export default function CustomDatePicker({ onClose, onApply }) {
   function handleDayClick(date) {
     if (!selecting || !startDate) {
       setStartDate(date); setEndDate(null); setSelecting(true)
-      setSliderMin(dateToIndex(date))
     } else {
       if (toDateNum(date) < toDateNum(startDate)) {
         setStartDate(date); setEndDate(null)
-        setSliderMin(dateToIndex(date))
       } else {
         setEndDate(date); setSelecting(false)
-        setSliderMin(dateToIndex(startDate))
-        setSliderMax(dateToIndex(date))
       }
     }
   }
@@ -524,6 +520,69 @@ export default function CustomDatePicker({ onClose, onApply }) {
         </button>
       </div>
 
+      {/* Data distribution */}
+      <div style={{ marginBottom: 4 }}>
+        <div style={{ ...sectionLabelStyle, marginBottom: distOpen ? 6 : 0 }}>
+          <button
+            onClick={() => setDistOpen(v => !v)}
+            style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', padding: 0, cursor: 'pointer', color: 'rgba(255,255,255,0.55)', fontWeight: 600, fontSize: '0.78rem', fontFamily: 'inherit' }}
+          >
+            <ChevronDown size={13} style={{ color: 'rgba(255,255,255,0.4)', transition: 'transform 180ms', transform: distOpen ? 'rotate(0deg)' : 'rotate(-90deg)' }} />
+            Data distribution
+          </button>
+          {distOpen && (
+            <span style={{ fontSize: '0.72rem', display: 'flex', alignItems: 'center', gap: 4 }}>
+              Interval by
+              <span style={{ position: 'relative', display: 'inline-block' }}>
+                <span style={{
+                  color: 'var(--primary)', fontWeight: 600,
+                  borderBottom: '1px dotted var(--primary)',
+                  pointerEvents: 'none', userSelect: 'none',
+                }}>
+                  {interval}
+                </span>
+                <select
+                  value={interval}
+                  onChange={e => setInterval(e.target.value)}
+                  style={{
+                    position: 'absolute', inset: 0,
+                    opacity: 0, cursor: 'pointer',
+                    width: '100%', height: '100%',
+                  }}
+                >
+                  <option value="day">day</option>
+                  <option value="week">week</option>
+                  <option value="month">month</option>
+                </select>
+              </span>
+              {interval === 'day' && (
+                <span style={{ color: 'rgba(255,255,255,0.3)', fontWeight: 400 }}>
+                  · {Math.round(SLIDER_TOTAL / MAX_DISPLAY_BARS.day)}d/bar
+                </span>
+              )}
+              {interval === 'week' && (
+                <span style={{ color: 'rgba(255,255,255,0.3)', fontWeight: 400 }}>· 7d/bar</span>
+              )}
+            </span>
+          )}
+        </div>
+        {distOpen && (
+          <DataDistribution
+            sliderMin={sliderMin}
+            sliderMax={sliderMax}
+            totalDays={730}
+            interval={interval}
+            onSliderChange={(mn, mx) => {
+              setSliderMin(mn); setSliderMax(mx)
+              setStartDate(indexToDate(mn)); setEndDate(indexToDate(mx))
+              setSelecting(false)
+            }}
+          />
+        )}
+      </div>
+
+      <div style={dividerStyle} />
+
       {/* Calendars */}
       <div style={{ marginBottom: 4 }}>
         {/* Shared header row: arrow · left month/year · right month/year · arrow */}
@@ -532,7 +591,6 @@ export default function CustomDatePicker({ onClose, onApply }) {
             <ChevronLeft size={15} />
           </button>
 
-          {/* Left calendar title */}
           {[{ side: 'left', month: leftMonth, year: leftYear, onMonth: selectLeftMonth, onYear: selectLeftYear },
             { side: 'right', month: right.month, year: right.year, onMonth: selectRightMonth, onYear: selectRightYear }
           ].map(({ side, month, year, onMonth, onYear }) => {
@@ -630,69 +688,6 @@ export default function CustomDatePicker({ onClose, onApply }) {
             onDayHover={d => selecting && setHoverDate(d)}
           />
         </div>
-      </div>
-
-      <div style={dividerStyle} />
-
-      {/* Data distribution */}
-      <div style={{ marginBottom: 4 }}>
-        <div style={{ ...sectionLabelStyle, marginBottom: distOpen ? 6 : 0 }}>
-          <button
-            onClick={() => setDistOpen(v => !v)}
-            style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', padding: 0, cursor: 'pointer', color: 'rgba(255,255,255,0.55)', fontWeight: 600, fontSize: '0.78rem', fontFamily: 'inherit' }}
-          >
-            <ChevronDown size={13} style={{ color: 'rgba(255,255,255,0.4)', transition: 'transform 180ms', transform: distOpen ? 'rotate(0deg)' : 'rotate(-90deg)' }} />
-            Data distribution
-          </button>
-          {distOpen && (
-            <span style={{ fontSize: '0.72rem', display: 'flex', alignItems: 'center', gap: 4 }}>
-              Interval by
-              <span style={{ position: 'relative', display: 'inline-block' }}>
-                <span style={{
-                  color: 'var(--primary)', fontWeight: 600,
-                  borderBottom: '1px dotted var(--primary)',
-                  pointerEvents: 'none', userSelect: 'none',
-                }}>
-                  {interval}
-                </span>
-                <select
-                  value={interval}
-                  onChange={e => setInterval(e.target.value)}
-                  style={{
-                    position: 'absolute', inset: 0,
-                    opacity: 0, cursor: 'pointer',
-                    width: '100%', height: '100%',
-                  }}
-                >
-                  <option value="day">day</option>
-                  <option value="week">week</option>
-                  <option value="month">month</option>
-                </select>
-              </span>
-              {interval === 'day' && (
-                <span style={{ color: 'rgba(255,255,255,0.3)', fontWeight: 400 }}>
-                  · {Math.round(SLIDER_TOTAL / MAX_DISPLAY_BARS.day)}d/bar
-                </span>
-              )}
-              {interval === 'week' && (
-                <span style={{ color: 'rgba(255,255,255,0.3)', fontWeight: 400 }}>· 7d/bar</span>
-              )}
-            </span>
-          )}
-        </div>
-        {distOpen && (
-          <DataDistribution
-            sliderMin={sliderMin}
-            sliderMax={sliderMax}
-            totalDays={730}
-            interval={interval}
-          onSliderChange={(mn, mx) => {
-            setSliderMin(mn); setSliderMax(mx)
-            setStartDate(indexToDate(mn)); setEndDate(indexToDate(mx))
-            setSelecting(false)
-          }}
-          />
-        )}
       </div>
 
       <div style={dividerStyle} />
