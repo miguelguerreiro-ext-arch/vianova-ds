@@ -2,14 +2,14 @@ import { useState } from 'react'
 import SectionHeader from '../components/SectionHeader'
 
 const DURATIONS = [
-  { token: 'motion/fast', value: '120ms', use: 'Hover, focus, icon swaps', ms: 120 },
-  { token: 'motion/base', value: '180ms', use: 'Panels, dropdowns, tooltips', ms: 180 },
-  { token: 'motion/slow', value: '240ms', use: 'Modal/drawer enter, page transitions', ms: 240 },
+  { token: 'motion/duration/fast', value: '120ms', use: 'Micro-interactions, hover', ms: 120 },
+  { token: 'motion/duration/base', value: '180ms', use: 'Default transitions', ms: 180 },
+  { token: 'motion/duration/slow', value: '240ms', use: 'Larger surface changes', ms: 240 },
 ]
 
 const EASINGS = [
-  { label: 'Default', value: 'cubic-bezier(0.2, 0, 0, 1)', use: 'Ease-out, responsive to input' },
-  { label: 'Entering', value: 'cubic-bezier(0.16, 1, 0.3, 1)', use: 'Soft settle for surfaces entering screen' },
+  { label: 'motion/easing/default', value: 'cubic-bezier(0.2, 0, 0, 1)', use: 'Default' },
+  { label: 'motion/easing/enter',   value: 'cubic-bezier(0.16, 1, 0.3, 1)', use: 'Entering content' },
 ]
 
 function DemoButton({ label, ms, easing }) {

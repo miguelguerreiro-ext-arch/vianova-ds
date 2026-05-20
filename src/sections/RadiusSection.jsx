@@ -1,11 +1,11 @@
 import SectionHeader from '../components/SectionHeader'
 
 const RADII = [
-  { token: 'radius/rounded-sm', value: '4px', use: 'Inputs, chips, small buttons', r: 4 },
-  { token: 'radius/rounded-md', value: '6px', use: 'Default for buttons', r: 6 },
-  { token: 'radius/rounded-lg', value: '8px', use: 'Cards, modals', r: 8 },
-  { token: 'radius/rounded-xl', value: '12px', use: 'Large surfaces, feature cards', r: 12 },
-  { token: 'radius/rounded-full', value: '9999px', use: 'Pills, avatars, toggles', r: 9999 },
+  { token: 'radius/sm',   value: '4px',    use: 'Inputs, chips, small buttons', r: 4 },
+  { token: 'radius/md',   value: '6px',    use: 'Default for buttons', r: 6 },
+  { token: 'radius/lg',   value: '8px',    use: 'Cards, modals', r: 8 },
+  { token: 'radius/xl',   value: '12px',   use: 'Large surfaces, feature cards', r: 12 },
+  { token: 'radius/full', value: '9999px', use: 'Pills, avatars, toggles', r: 9999 },
 ]
 
 export default function RadiusSection() {
