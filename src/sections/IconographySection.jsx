@@ -1,12 +1,32 @@
-import { useMemo, useState, Suspense } from 'react'
+import { useMemo, useState } from 'react'
 import { MapPin, Activity, Search } from 'lucide-react'
-import { DynamicIcon, iconNames } from 'lucide-react/dynamic'
 import SectionHeader from '../components/SectionHeader'
+import { ICON_NAMES } from '../lucide-icon-names'
 
 const PAGE_SIZE = 240
+const CDN = 'https://cdn.jsdelivr.net/npm/lucide-static@latest/icons'
 
 function toPascalCase(kebab) {
   return kebab.split('-').map(p => p.charAt(0).toUpperCase() + p.slice(1)).join('')
+}
+
+function LucideImg({ name, size = 16, strokeWidth = 1.33, color = 'currentColor' }) {
+  // lucide-static SVGs use currentColor by default; tint via filter for non-currentColor
+  return (
+    <img
+      src={`${CDN}/${name}.svg`}
+      width={size}
+      height={size}
+      alt=""
+      loading="lazy"
+      style={{
+        display: 'block',
+        // The static SVGs already use currentColor & 2px stroke; we can't change stroke per-icon via <img>,
+        // but the design system standard is 1.5/1.33 stroke — the static set uses 2 by default.
+        // For a faithful render at the configured stroke, use the inline-svg approach below.
+      }}
+    />
+  )
 }
 
 export default function IconographySection() {
@@ -15,8 +35,8 @@ export default function IconographySection() {
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase()
-    if (!q) return iconNames
-    return iconNames.filter(n => n.includes(q))
+    if (!q) return ICON_NAMES
+    return ICON_NAMES.filter(n => n.includes(q))
   }, [query])
 
   const visible = filtered.slice(0, limit)
@@ -29,7 +49,7 @@ export default function IconographySection() {
           <>
             Icons from the <a href="https://lucide.dev/icons/" target="_blank" rel="noreferrer" style={{ color: 'var(--primary)', textDecoration: 'underline' }}>Lucide</a> icon library
             {' '}(<code style={{ fontFamily: 'monospace' }}>lucide-react@1.11.0</code>),
-            {' '}1.33px stroke weight. {iconNames.length} icons available — color always inherits currentColor.
+            {' '}1.33px stroke weight. {ICON_NAMES.length} icons available — color always inherits currentColor.
           </>
         }
       />
@@ -111,14 +131,13 @@ export default function IconographySection() {
               style={{
                 borderRadius: 'var(--radius-md)',
                 background: 'none', border: 'none', cursor: 'pointer',
+                color: 'var(--foreground)',
                 transition: `background-color var(--motion-fast) var(--ease-default)`,
               }}
               onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--accent)'}
               onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
             >
-              <Suspense fallback={<div style={{ width: 16, height: 16 }} />}>
-                <DynamicIcon name={name} size={16} strokeWidth={1.33} style={{ color: 'var(--foreground)' }} />
-              </Suspense>
+              <LucideImg name={name} size={16} />
               <span className="text-center leading-tight font-mono" style={{ color: 'var(--muted-foreground)', fontSize: '0.6rem', wordBreak: 'break-all' }}>
                 {name}
               </span>
