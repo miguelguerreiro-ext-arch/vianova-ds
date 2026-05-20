@@ -1,29 +1,33 @@
+import { useState } from 'react'
 import SectionHeader from '../components/SectionHeader'
 
-const TYPE_SCALE = [
-  { token: 'text-xxs', size: '10px', rem: '0.625', use: 'Dense labels, metric units' },
-  { token: 'text-xs', size: '12px', rem: '0.75', use: 'Captions, table cells' },
-  { token: 'text-sm', size: '14px', rem: '0.875', use: 'Body default in compact UI' },
-  { token: 'text-base', size: '16px', rem: '1.0', use: 'Body default in marketing' },
-  { token: 'text-lg', size: '18px', rem: '1.125', use: 'Lead paragraphs' },
-  { token: 'text-xl', size: '20px', rem: '1.25', use: 'Section subheads' },
-  { token: 'text-2xl', size: '24px', rem: '1.5', use: 'H4' },
-  { token: 'text-3xl', size: '30px', rem: '1.875', use: 'H3' },
-  { token: 'text-4xl', size: '36px', rem: '2.25', use: 'H2' },
-  { token: 'text-5xl', size: '48px', rem: '3.0', use: 'H1' },
-  { token: 'text-6xl', size: '60px', rem: '3.75', use: 'Hero headlines' },
+const WEIGHTS = [
+  { label: 'thin',        display: 'Thin',        weight: 100 },
+  { label: 'extra-light', display: 'Extra Light',  weight: 200 },
+  { label: 'light',       display: 'Light',        weight: 300 },
+  { label: 'regular',     display: 'Regular',      weight: 400 },
+  { label: 'medium',      display: 'Medium',       weight: 500 },
+  { label: 'semi-bold',   display: 'Semi Bold',    weight: 600 },
+  { label: 'bold',        display: 'Bold',         weight: 700 },
+  { label: 'extra-bold',  display: 'Extra Bold',   weight: 800 },
+  { label: 'black',       display: 'Black',        weight: 900 },
 ]
 
-const WEIGHTS = [
-  { label: 'Thin', weight: 100 },
-  { label: 'Extra Light', weight: 200 },
-  { label: 'Light', weight: 300 },
-  { label: 'Regular', weight: 400 },
-  { label: 'Medium', weight: 500 },
-  { label: 'Semi Bold', weight: 600 },
-  { label: 'Bold', weight: 700 },
-  { label: 'Extra Bold', weight: 800 },
-  { label: 'Black', weight: 900 },
+const TYPE_SCALE = [
+  { token: 'text-xxs',  size: '10px', lh: 'Auto', rem: '0.625', use: 'Dense labels, metric units' },
+  { token: 'text-xs',   size: '12px', lh: 'Auto', rem: '0.75',  use: 'Captions, table cells' },
+  { token: 'text-sm',   size: '14px', lh: 'Auto', rem: '0.875', use: 'Body default in compact UI' },
+  { token: 'text-base', size: '16px', lh: 'Auto', rem: '1.0',   use: 'Body default in marketing' },
+  { token: 'text-lg',   size: '18px', lh: 'Auto', rem: '1.125', use: 'Lead paragraphs' },
+  { token: 'text-xl',   size: '20px', lh: 'Auto', rem: '1.25',  use: 'Section subheads' },
+  { token: 'text-2xl',  size: '24px', lh: 'Auto', rem: '1.5',   use: 'H4' },
+  { token: 'text-3xl',  size: '30px', lh: 'Auto', rem: '1.875', use: 'H3' },
+  { token: 'text-4xl',  size: '36px', lh: 'Auto', rem: '2.25',  use: 'H2' },
+  { token: 'text-5xl',  size: '48px', lh: 'Auto', rem: '3.0',   use: 'H1' },
+  { token: 'text-6xl',  size: '60px', lh: 'Auto', rem: '3.75',  use: 'Hero headlines' },
+  { token: 'text-7xl',  size: '72px', lh: 'Auto', rem: '4.5',   use: 'Display' },
+  { token: 'text-8xl',  size: '96px', lh: 'Auto', rem: '6.0',   use: 'Large display' },
+  { token: 'text-9xl',  size: '128px',lh: 'Auto', rem: '8.0',   use: 'Oversized display' },
 ]
 
 const RECIPES = [
@@ -72,6 +76,51 @@ function GroupLabel({ children }) {
   )
 }
 
+function TypeGroup({ token, size, lh, rem, use }) {
+  const [open, setOpen] = useState(false)
+
+  return (
+    <div style={{ borderBottom: '1px solid var(--border)' }}>
+      <button
+        onClick={() => setOpen(o => !o)}
+        style={{
+          width: '100%', background: 'none', border: 'none', padding: '10px 0',
+          cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8,
+        }}
+      >
+        <span style={{ fontSize: '0.65rem', color: 'var(--muted-foreground)', width: 10, flexShrink: 0 }}>
+          {open ? '▾' : '▸'}
+        </span>
+        <span className="text-xs font-mono font-medium" style={{ color: 'var(--foreground)' }}>
+          {token}
+        </span>
+        <span className="text-xs font-mono" style={{ color: 'var(--muted-foreground)', marginLeft: 4 }}>
+          · {size}/{lh} · {rem}rem · {use}
+        </span>
+      </button>
+
+      {open && (
+        <div style={{ paddingLeft: 18, paddingBottom: 8 }}>
+          {WEIGHTS.map(w => (
+            <div
+              key={w.label}
+              className="flex items-baseline justify-between py-1.5"
+              style={{ borderBottom: '1px solid var(--border)' }}
+            >
+              <span style={{ fontSize: size, fontWeight: w.weight, color: 'var(--foreground)', lineHeight: 1.3 }}>
+                The quick brown fox
+              </span>
+              <span className="text-xs font-mono flex-shrink-0 ml-4" style={{ color: 'var(--muted-foreground)' }}>
+                {w.display} · {w.weight}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function TypographySection() {
   return (
     <div>
@@ -101,33 +150,19 @@ export default function TypographySection() {
                 The quick brown fox
               </span>
               <span className="text-xs font-mono" style={{ color: 'var(--muted-foreground)' }}>
-                {w.label} · {w.weight}
+                {w.display} · {w.weight}
               </span>
             </div>
           ))}
         </div>
       </div>
 
-      {/* Type scale */}
+      {/* Type scale — collapsible per size */}
       <div className="mb-12">
-        <GroupLabel>Type scale</GroupLabel>
-        <div className="space-y-1">
+        <GroupLabel>Text styles</GroupLabel>
+        <div>
           {TYPE_SCALE.map(t => (
-            <div
-              key={t.token}
-              className="flex items-center justify-between py-3 border-b"
-              style={{ borderColor: 'var(--border)' }}
-            >
-              <span style={{ fontSize: t.size, fontWeight: 400, color: 'var(--foreground)', lineHeight: 1.2 }}>
-                Vianova
-              </span>
-              <div className="text-right">
-                <p className="text-xs font-mono" style={{ color: 'var(--foreground)' }}>{t.token}</p>
-                <p className="text-xs font-mono" style={{ color: 'var(--muted-foreground)' }}>
-                  {t.size} · {t.rem}rem · {t.use}
-                </p>
-              </div>
-            </div>
+            <TypeGroup key={t.token} {...t} />
           ))}
         </div>
       </div>

@@ -1,5 +1,31 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import SectionHeader from '../components/SectionHeader'
+
+function readTwRef(token) {
+  const raw = getComputedStyle(document.documentElement)
+    .getPropertyValue(`--${token}`)
+    .trim()
+    .toUpperCase()
+  if (!raw) return null
+  for (const { family, shades } of TAILWIND_PALETTE) {
+    for (const { shade, hex } of shades) {
+      if (hex.toUpperCase() === raw) {
+        return `--tw-${family.toLowerCase()}-${shade}`
+      }
+    }
+  }
+  return null
+}
+
+function useTwRef(token) {
+  const [ref, setRef] = useState(() => readTwRef(token))
+  useEffect(() => {
+    const obs = new MutationObserver(() => setRef(readTwRef(token)))
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] })
+    return () => obs.disconnect()
+  }, [token])
+  return ref
+}
 
 function rgbToHex(rgb) {
   const m = rgb.match(/\d+/g)
@@ -20,6 +46,7 @@ function copyHexFromVar(varName) {
 
 function Swatch({ token, usage }) {
   const [copied, setCopied] = useState(null)
+  const twRef = useTwRef(token)
 
   function handleClick() {
     const hex = copyHexFromVar(token)
@@ -55,6 +82,11 @@ function Swatch({ token, usage }) {
         {usage && (
           <p style={{ margin: '3px 0 0', fontSize: '0.7rem', color: 'var(--muted-foreground)', lineHeight: 1.4 }}>
             {usage}
+          </p>
+        )}
+        {twRef && (
+          <p style={{ margin: '4px 0 0', fontSize: '0.65rem', fontFamily: 'monospace', color: 'var(--primary)', opacity: 0.85, lineHeight: 1.3 }}>
+            {twRef}
           </p>
         )}
       </div>
