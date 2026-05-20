@@ -1,10 +1,53 @@
 import { useState } from 'react'
 import SectionHeader from '../components/SectionHeader'
 
+function rgbToHex(rgb) {
+  const m = rgb.match(/\d+/g)
+  if (!m) return rgb
+  return '#' + m.slice(0, 3).map(n => parseInt(n).toString(16).padStart(2, '0')).join('').toUpperCase()
+}
+
+function copyHexFromVar(varName) {
+  const el = document.createElement('div')
+  el.style.color = `var(--${varName})`
+  document.body.appendChild(el)
+  const computed = getComputedStyle(el).color
+  document.body.removeChild(el)
+  const hex = rgbToHex(computed)
+  navigator.clipboard.writeText(hex)
+  return hex
+}
+
 function Swatch({ token, usage }) {
+  const [copied, setCopied] = useState(null)
+
+  function handleClick() {
+    const hex = copyHexFromVar(token)
+    setCopied(hex)
+    setTimeout(() => setCopied(null), 1500)
+  }
+
   return (
-    <div style={{ borderRadius: 'var(--radius-lg)', border: '1px solid var(--border)', overflow: 'hidden' }}>
-      <div style={{ height: 56, backgroundColor: `var(--${token})` }} />
+    <div
+      onClick={handleClick}
+      title="Click to copy hex"
+      style={{
+        borderRadius: 'var(--radius-lg)', border: '1px solid var(--border)',
+        overflow: 'hidden', cursor: 'pointer', position: 'relative',
+      }}
+    >
+      <div style={{ height: 56, backgroundColor: `var(--${token})`, position: 'relative' }}>
+        {copied && (
+          <div style={{
+            position: 'absolute', inset: 0, display: 'flex', alignItems: 'center',
+            justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.35)',
+          }}>
+            <span style={{ fontSize: '0.7rem', fontWeight: 700, fontFamily: 'monospace', color: '#fff' }}>
+              {copied}
+            </span>
+          </div>
+        )}
+      </div>
       <div style={{ padding: '8px 12px 10px' }}>
         <p style={{ margin: 0, fontSize: '0.72rem', fontWeight: 600, fontFamily: 'monospace', color: 'var(--foreground)' }}>
           --{token}
@@ -303,6 +346,42 @@ const TAILWIND_PALETTE = [
   },
 ]
 
+function PaletteSwatch({ family, shade, hex }) {
+  const [copied, setCopied] = useState(false)
+
+  function handleClick() {
+    navigator.clipboard.writeText(hex)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 1200)
+  }
+
+  return (
+    <div
+      key={shade}
+      title={`${family}/${shade} · ${hex}`}
+      onClick={handleClick}
+      style={{
+        flex: 1, height: 28, backgroundColor: hex,
+        borderRadius: 3, cursor: 'pointer', position: 'relative',
+        outline: copied ? '2px solid white' : 'none',
+        outlineOffset: '-2px',
+      }}
+    >
+      {copied && (
+        <div style={{
+          position: 'absolute', inset: 0, display: 'flex',
+          alignItems: 'center', justifyContent: 'center',
+          backgroundColor: 'rgba(0,0,0,0.4)', borderRadius: 3,
+        }}>
+          <span style={{ fontSize: '0.45rem', fontWeight: 700, fontFamily: 'monospace', color: '#fff', whiteSpace: 'nowrap' }}>
+            ✓
+          </span>
+        </div>
+      )}
+    </div>
+  )
+}
+
 function PaletteRow({ family, shades }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 6 }}>
@@ -311,17 +390,7 @@ function PaletteRow({ family, shades }) {
       </div>
       <div style={{ display: 'flex', gap: 2, flex: 1 }}>
         {shades.map(({ shade, hex }) => (
-          <div
-            key={shade}
-            title={`${family}/${shade} · ${hex}`}
-            style={{
-              flex: 1,
-              height: 28,
-              backgroundColor: hex,
-              borderRadius: 3,
-              cursor: 'default',
-            }}
-          />
+          <PaletteSwatch key={shade} family={family} shade={shade} hex={hex} />
         ))}
       </div>
     </div>
