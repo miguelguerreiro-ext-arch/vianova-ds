@@ -12,17 +12,32 @@ import ComponentsSection from './sections/ComponentsSection'
 import ChangelogSection from './sections/ChangelogSection'
 import './index.css'
 
-const SECTIONS = [
-  { id: 'logo', label: 'Logo' },
-  { id: 'color', label: 'Color' },
-  { id: 'typography', label: 'Typography' },
-  { id: 'spacing', label: 'Spacing' },
-  { id: 'radius', label: 'Radius' },
-  { id: 'shadow', label: 'Shadow' },
-  { id: 'motion', label: 'Motion' },
-  { id: 'iconography', label: 'Iconography' },
-  { id: 'components', label: 'Components' },
-  { id: 'changelog', label: 'Changelog' },
+const SECTION_GROUPS = [
+  {
+    label: 'Foundations',
+    items: [
+      { id: 'logo', label: 'Logo' },
+      { id: 'color', label: 'Color' },
+      { id: 'typography', label: 'Typography' },
+      { id: 'spacing', label: 'Spacing' },
+      { id: 'radius', label: 'Radius' },
+      { id: 'shadow', label: 'Shadow' },
+      { id: 'motion', label: 'Motion' },
+      { id: 'iconography', label: 'Iconography' },
+    ],
+  },
+  {
+    label: 'Components',
+    items: [
+      { id: 'components', label: 'Overview' },
+    ],
+  },
+  {
+    label: 'Change Log',
+    items: [
+      { id: 'changelog', label: 'History' },
+    ],
+  },
 ]
 
 const THEMES = ['', 'dark', 'dark-stone', 'dark-slate', 'aisin', 'here']
@@ -40,7 +55,7 @@ export default function App() {
   return (
     <div className="flex min-h-screen" style={{ backgroundColor: 'var(--background)', color: 'var(--foreground)' }}>
       <Sidebar
-        sections={SECTIONS}
+        groups={SECTION_GROUPS}
         active={active}
         onSelect={setActive}
         theme={theme}

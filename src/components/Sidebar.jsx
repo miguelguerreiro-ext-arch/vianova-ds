@@ -9,7 +9,7 @@ const THEME_OPTIONS = [
   { value: 'here',       label: 'HERE' },
 ]
 
-export default function Sidebar({ sections, active, onSelect, theme, onThemeChange }) {
+export default function Sidebar({ groups, active, onSelect, theme, onThemeChange }) {
   return (
     <aside
       className="fixed top-0 left-0 h-screen w-56 flex flex-col border-r"
@@ -50,26 +50,30 @@ export default function Sidebar({ sections, active, onSelect, theme, onThemeChan
 
       {/* Nav */}
       <nav className="flex-1 px-3 py-4 overflow-y-auto">
-        <p
-          className="px-3 mb-2 text-xs font-medium uppercase tracking-widest"
-          style={{ color: 'var(--muted-foreground)' }}
-        >
-          Foundations
-        </p>
-        {sections.map(s => (
-          <button
-            key={s.id}
-            onClick={() => onSelect(s.id)}
-            className="w-full text-left px-3 py-2 rounded text-sm transition-colors"
-            style={{
-              borderRadius: 'var(--radius-md)',
-              backgroundColor: active === s.id ? 'var(--primary)' : 'transparent',
-              color: active === s.id ? 'var(--primary-foreground)' : 'var(--foreground)',
-              transitionDuration: 'var(--motion-fast)',
-            }}
-          >
-            {s.label}
-          </button>
+        {groups.map((g, gi) => (
+          <div key={g.label} style={{ marginTop: gi === 0 ? 0 : 18 }}>
+            <p
+              className="px-3 mb-2 text-xs font-medium uppercase tracking-widest"
+              style={{ color: 'var(--muted-foreground)' }}
+            >
+              {g.label}
+            </p>
+            {g.items.map(s => (
+              <button
+                key={s.id}
+                onClick={() => onSelect(s.id)}
+                className="w-full text-left px-3 py-2 rounded text-sm transition-colors"
+                style={{
+                  borderRadius: 'var(--radius-md)',
+                  backgroundColor: active === s.id ? 'var(--primary)' : 'transparent',
+                  color: active === s.id ? 'var(--primary-foreground)' : 'var(--foreground)',
+                  transitionDuration: 'var(--motion-fast)',
+                }}
+              >
+                {s.label}
+              </button>
+            ))}
+          </div>
         ))}
       </nav>
 
