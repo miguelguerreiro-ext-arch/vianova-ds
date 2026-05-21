@@ -1,5 +1,17 @@
 export const CHANGELOG = [
   {
+    "sha": "2df4e1c",
+    "iso": "2026-05-21T10:10:09+01:00",
+    "title": "Add sidebar group dividers: Foundations, Components, Change Log",
+    "body": "Refactor sidebar nav to render grouped sections instead of a single\n\"Foundations\" header. Components and Change Log now each have their\nown uppercase group label with their items underneath."
+  },
+  {
+    "sha": "f6fc4d3",
+    "iso": "2026-05-21T09:09:05+01:00",
+    "title": "Rebrand as Vianova Product DS and add auto-generated Changelog",
+    "body": "- Sidebar wordmark: \"VIANOVA\" eyebrow + \"Product DS\" headline\n- Page title: \"Vianova Product DS\"\n- New Changelog section with vertical timeline grouped by day,\n  per-commit timestamps, SHA, and expandable commit bodies\n- scripts/build-changelog.cjs regenerates src/changelog-data.js\n  from git log; wired as npm \"prebuild\" so every Pages deploy\n  ships an up-to-date history"
+  },
+  {
     "sha": "2c19998",
     "iso": "2026-05-20T18:24:36+01:00",
     "title": "Fix blank prod page: stop using lucide-react/dynamic chunked imports",
