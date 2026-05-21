@@ -16,18 +16,35 @@ export default function Sidebar({ sections, active, onSelect, theme, onThemeChan
       style={{ backgroundColor: 'var(--background)', borderColor: 'var(--border)' }}
     >
       {/* Wordmark */}
-      <div className="px-6 py-5 border-b" style={{ borderColor: 'var(--border)', display: 'flex', alignItems: 'center', gap: 10 }}>
-        <img src={logoUrl} alt="Vianova DS" style={{ width: 32, height: 32, flexShrink: 0 }} />
-        <div>
+      <div
+        className="px-5 py-5 border-b"
+        style={{ borderColor: 'var(--border)', display: 'flex', alignItems: 'center', gap: 12 }}
+      >
+        <img src={logoUrl} alt="Vianova Product DS" style={{ width: 34, height: 34, flexShrink: 0 }} />
+        <div style={{ lineHeight: 1.1 }}>
           <span
-            className="text-sm font-semibold tracking-widest uppercase"
-            style={{ color: 'var(--primary)' }}
+            className="text-[10px] font-medium uppercase"
+            style={{
+              color: 'var(--muted-foreground)',
+              letterSpacing: '0.18em',
+              display: 'block',
+            }}
           >
             Vianova
           </span>
-          <p className="text-xs mt-0.5" style={{ color: 'var(--muted-foreground)' }}>
-            Design System
-          </p>
+          <span
+            style={{
+              fontFamily: '"Inter", ui-sans-serif, system-ui, sans-serif',
+              fontSize: '1.125rem',
+              fontWeight: 600,
+              letterSpacing: '-0.015em',
+              color: 'var(--foreground)',
+              display: 'inline-block',
+              marginTop: 2,
+            }}
+          >
+            Product DS
+          </span>
         </div>
       </div>
 

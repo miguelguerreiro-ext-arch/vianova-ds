@@ -9,6 +9,7 @@ import ShadowSection from './sections/ShadowSection'
 import MotionSection from './sections/MotionSection'
 import IconographySection from './sections/IconographySection'
 import ComponentsSection from './sections/ComponentsSection'
+import ChangelogSection from './sections/ChangelogSection'
 import './index.css'
 
 const SECTIONS = [
@@ -21,6 +22,7 @@ const SECTIONS = [
   { id: 'motion', label: 'Motion' },
   { id: 'iconography', label: 'Iconography' },
   { id: 'components', label: 'Components' },
+  { id: 'changelog', label: 'Changelog' },
 ]
 
 const THEMES = ['', 'dark', 'dark-stone', 'dark-slate', 'aisin', 'here']
@@ -54,6 +56,7 @@ export default function App() {
         {active === 'motion'     && <MotionSection />}
         {active === 'iconography'&& <IconographySection />}
         {active === 'components' && <ComponentsSection />}
+        {active === 'changelog'  && <ChangelogSection />}
       </main>
     </div>
   )
