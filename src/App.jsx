@@ -29,7 +29,19 @@ const SECTION_GROUPS = [
   {
     label: 'Components',
     items: [
-      { id: 'components', label: 'Overview' },
+      { id: 'components:buttons',     label: 'Buttons' },
+      { id: 'components:badges',      label: 'Badges' },
+      { id: 'components:inputs',      label: 'Form inputs' },
+      { id: 'components:alerts',      label: 'Alerts' },
+      { id: 'components:cards',       label: 'Data cards' },
+      { id: 'components:datepicker',  label: 'Date picker' },
+      { id: 'components:topbar',      label: 'Topbar' },
+      { id: 'components:toolbuttons', label: 'Tool buttons' },
+      { id: 'components:menutools',   label: 'Menu tools' },
+      { id: 'components:menuitem',    label: 'Menu item' },
+      { id: 'components:datapanel',   label: 'Data panel' },
+      { id: 'components:datalayer',   label: 'Data layer' },
+      { id: 'components:tabviz',      label: 'Tab visualization' },
     ],
   },
   {
@@ -52,12 +64,20 @@ export default function App() {
     if (theme) root.classList.add(theme)
   }, [theme])
 
+  // scroll to top on view change for "every component is its own page" feel
+  const handleSelect = (id) => {
+    setActive(id)
+    window.scrollTo({ top: 0, behavior: 'instant' in window ? 'instant' : 'auto' })
+  }
+
+  const componentView = active.startsWith('components:') ? active.split(':')[1] : null
+
   return (
     <div className="flex min-h-screen" style={{ backgroundColor: 'var(--background)', color: 'var(--foreground)' }}>
       <Sidebar
         groups={SECTION_GROUPS}
         active={active}
-        onSelect={setActive}
+        onSelect={handleSelect}
         theme={theme}
         onThemeChange={setTheme}
       />
@@ -70,7 +90,7 @@ export default function App() {
         {active === 'shadow'     && <ShadowSection />}
         {active === 'motion'     && <MotionSection />}
         {active === 'iconography'&& <IconographySection />}
-        {active === 'components' && <ComponentsSection />}
+        {componentView           && <ComponentsSection view={componentView} />}
         {active === 'changelog'  && <ChangelogSection />}
       </main>
     </div>

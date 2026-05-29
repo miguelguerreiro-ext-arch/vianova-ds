@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import logoUrl from '../assets/logo.png'
 
 const THEME_OPTIONS = [
@@ -10,6 +11,9 @@ const THEME_OPTIONS = [
 ]
 
 export default function Sidebar({ groups, active, onSelect, theme, onThemeChange }) {
+  const [collapsed, setCollapsed] = useState({})
+  const toggle = (label) => setCollapsed(c => ({ ...c, [label]: !c[label] }))
+
   return (
     <aside
       className="fixed top-0 left-0 h-screen w-56 flex flex-col border-r"
@@ -50,31 +54,65 @@ export default function Sidebar({ groups, active, onSelect, theme, onThemeChange
 
       {/* Nav */}
       <nav className="flex-1 px-3 py-4 overflow-y-auto">
-        {groups.map((g, gi) => (
-          <div key={g.label} style={{ marginTop: gi === 0 ? 0 : 18 }}>
-            <p
-              className="px-3 mb-2 text-xs font-medium uppercase tracking-widest"
-              style={{ color: 'var(--muted-foreground)' }}
-            >
-              {g.label}
-            </p>
-            {g.items.map(s => (
-              <button
-                key={s.id}
-                onClick={() => onSelect(s.id)}
-                className="w-full text-left px-3 py-2 rounded text-sm transition-colors"
-                style={{
-                  borderRadius: 'var(--radius-md)',
-                  backgroundColor: active === s.id ? 'var(--primary)' : 'transparent',
-                  color: active === s.id ? 'var(--primary-foreground)' : 'var(--foreground)',
-                  transitionDuration: 'var(--motion-fast)',
-                }}
-              >
-                {s.label}
-              </button>
-            ))}
-          </div>
-        ))}
+        {groups.map((g, gi) => {
+          const collapsible = g.items.some(i => i.id.includes(':'))
+          const isCollapsed = !!collapsed[g.label]
+          return (
+            <div key={g.label} style={{ marginTop: gi === 0 ? 0 : 18 }}>
+              {collapsible ? (
+                <button
+                  onClick={() => toggle(g.label)}
+                  className="w-full flex items-center justify-between px-3 mb-2 text-xs font-medium uppercase tracking-widest"
+                  style={{
+                    color: 'var(--muted-foreground)',
+                    background: 'transparent',
+                    border: 'none',
+                    cursor: 'pointer',
+                  }}
+                >
+                  <span>{g.label}</span>
+                  <svg
+                    width="10" height="10" viewBox="0 0 12 12"
+                    fill="none" stroke="currentColor" strokeWidth="1.75"
+                    style={{
+                      transform: isCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)',
+                      transition: 'transform var(--motion-fast)',
+                    }}
+                  >
+                    <path d="M2 4l4 4 4-4" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </button>
+              ) : (
+                <p
+                  className="px-3 mb-2 text-xs font-medium uppercase tracking-widest"
+                  style={{ color: 'var(--muted-foreground)' }}
+                >
+                  {g.label}
+                </p>
+              )}
+              {!isCollapsed && g.items.map(s => {
+                const isActive = active === s.id
+                return (
+                  <button
+                    key={s.id}
+                    onClick={() => onSelect(s.id)}
+                    className="w-full text-left rounded transition-colors"
+                    style={{
+                      padding: '8px 12px',
+                      fontSize: '0.875rem',
+                      borderRadius: 'var(--radius-md)',
+                      backgroundColor: isActive ? 'var(--primary)' : 'transparent',
+                      color: isActive ? 'var(--primary-foreground)' : 'var(--foreground)',
+                      transitionDuration: 'var(--motion-fast)',
+                    }}
+                  >
+                    {s.label}
+                  </button>
+                )
+              })}
+            </div>
+          )
+        })}
       </nav>
 
       {/* Theme selector */}

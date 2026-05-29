@@ -6,52 +6,122 @@ export const BTN_USAGE =
 <Btn variant="outline">Outline</Btn>
 <Btn variant="ghost">Ghost</Btn>
 <Btn variant="destructive">Destructive</Btn>
-<Btn variant="primary" icon={<MapPin size={14} />}>With icon</Btn>
+
+{/* Icons — 16px slots, leading and/or trailing */}
+<Btn variant="primary" icon={<MapPin />}>Leading</Btn>
+<Btn variant="primary" iconRight={<ArrowUpRight />}>Trailing</Btn>
+<Btn variant="primary" icon={<MapPin />} iconRight={<ArrowUpRight />}>Both</Btn>
+
+{/* Sizes — md is the Figma "Default" 36px */}
 <Btn variant="primary" size="sm">Small</Btn>
+<Btn variant="primary" size="md">Default</Btn>
 <Btn variant="primary" size="lg">Large</Btn>
+
 <Btn variant="primary" disabled>Disabled</Btn>`
 
 export const BTN_SOURCE =
-`function Btn({ variant = 'primary', size = 'md', disabled = false, icon, children }) {
+`function Btn({ variant = 'primary', size = 'md', disabled = false, icon, iconRight, children }) {
   const [hovered, setHovered] = useState(false)
+  const [focused, setFocused] = useState(false)
+  const [pressed, setPressed] = useState(false)
+
+  // Figma "Default" size = 36px. Other sizes are DS extensions.
+  const sizes = {
+    sm: { height: 32, padding: '6px 12px',  fontSize: '13px', lineHeight: '18px', gap: 6, iconSize: 14 },
+    md: { height: 36, padding: '8px 16px',  fontSize: '14px', lineHeight: '20px', gap: 8, iconSize: 16 },
+    lg: { height: 44, padding: '10px 20px', fontSize: '15px', lineHeight: '22px', gap: 10, iconSize: 18 },
+  }
+  const s = sizes[size]
+
+  const variantStyles = (() => {
+    if (variant === 'primary') {
+      return {
+        backgroundColor: 'var(--primary)',
+        // Figma hover shifts TEXT color from primary-foreground → secondary (subtle)
+        color: hovered && !disabled ? 'var(--secondary)' : 'var(--primary-foreground)',
+        border: '1px solid ' + (focused && !disabled ? 'var(--border)' : 'transparent'),
+        boxShadow: disabled ? 'none' : 'var(--shadow-sm)',
+      }
+    }
+    if (variant === 'secondary') {
+      return {
+        backgroundColor: (hovered || pressed || focused) && !disabled
+          ? 'var(--accent)' : 'var(--background)',
+        color: 'var(--foreground)',
+        border: '1px solid ' + (focused && !disabled ? 'var(--ring)' : 'var(--border)'),
+        boxShadow: disabled ? 'none' : 'var(--shadow-sm)',
+      }
+    }
+    if (variant === 'outline') {
+      return {
+        backgroundColor: hovered && !disabled ? 'var(--accent)' : 'var(--background)',
+        color: 'var(--foreground)',
+        border: '1px solid ' + (focused && !disabled ? 'var(--ring)' : 'var(--border)'),
+        boxShadow: disabled ? 'none' : 'var(--shadow-sm)',
+      }
+    }
+    if (variant === 'ghost') {
+      return {
+        backgroundColor: hovered && !disabled ? 'var(--accent)' : 'transparent',
+        color: 'var(--foreground)',
+        border: '1px solid ' + (focused && !disabled ? 'var(--ring)' : 'transparent'),
+        boxShadow: 'none',
+      }
+    }
+    // destructive — DS extension
+    return {
+      backgroundColor: pressed && !disabled
+        ? 'color-mix(in srgb, var(--destructive), black 18%)'
+        : hovered && !disabled
+          ? 'color-mix(in srgb, var(--destructive), black 8%)'
+          : 'var(--destructive)',
+      color: 'var(--destructive-foreground)',
+      border: '1px solid ' + (focused && !disabled ? 'var(--border)' : 'transparent'),
+      boxShadow: disabled ? 'none' : 'var(--shadow-sm)',
+    }
+  })()
 
   const base = {
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: '6px',
-    fontFamily: 'inherit',
-    fontWeight: 500,
+    display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+    height: s.height, padding: s.padding, gap: s.gap,
+    fontFamily: 'inherit', fontWeight: 500,
+    fontSize: s.fontSize, lineHeight: s.lineHeight,
     cursor: disabled ? 'not-allowed' : 'pointer',
-    border: 'none',
-    outline: 'none',
+    outline: 'none', borderRadius: 'var(--radius-md)',
     opacity: disabled ? 0.5 : 1,
-    borderRadius: 'var(--radius-md)',
-    transition: 'background-color var(--motion-fast) var(--ease-default), opacity var(--motion-fast)',
+    transition: 'background-color var(--motion-fast), color var(--motion-fast), border-color var(--motion-fast), box-shadow var(--motion-fast), opacity var(--motion-fast)',
+    boxSizing: 'border-box', whiteSpace: 'nowrap',
   }
 
-  const sizes = {
-    sm: { padding: '4px 10px',  fontSize: '0.75rem' },
-    md: { padding: '8px 16px',  fontSize: '0.875rem' },
-    lg: { padding: '10px 20px', fontSize: '1rem' },
-  }
-
-  const variants = {
-    primary:     { backgroundColor: hovered && !disabled ? 'rgba(20,183,165,0.9)' : 'var(--primary)',     color: 'var(--primary-foreground)' },
-    secondary:   { backgroundColor: hovered && !disabled ? 'var(--accent)'         : 'var(--secondary)',   color: 'var(--secondary-foreground)' },
-    ghost:       { backgroundColor: hovered && !disabled ? 'var(--accent)'         : 'transparent',       color: 'var(--foreground)' },
-    destructive: { backgroundColor: hovered && !disabled ? 'rgba(239,68,68,0.85)'  : 'var(--destructive)', color: 'var(--destructive-foreground)' },
-    outline:     { backgroundColor: hovered && !disabled ? 'var(--accent)'         : 'transparent',       color: 'var(--foreground)', border: '1px solid var(--border)' },
+  // Icon slot — Figma uses 16×16. We size lucide icons via cloneElement.
+  const IconSlot = ({ node }) => {
+    if (!node) return null
+    const sized = isValidElement(node)
+      ? cloneElement(node, { size: node.props.size ?? s.iconSize })
+      : node
+    return (
+      <span style={{
+        display: 'inline-flex', flexShrink: 0,
+        width: s.iconSize, height: s.iconSize,
+        alignItems: 'center', justifyContent: 'center',
+      }}>{sized}</span>
+    )
   }
 
   return (
     <button
       disabled={disabled}
-      style={{ ...base, ...sizes[size], ...variants[variant] }}
+      style={{ ...base, ...variantStyles }}
       onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
+      onMouseLeave={() => { setHovered(false); setPressed(false) }}
+      onMouseDown={() => setPressed(true)}
+      onMouseUp={() => setPressed(false)}
+      onFocus={(e) => { if (e.target.matches(':focus-visible')) setFocused(true) }}
+      onBlur={() => setFocused(false)}
     >
-      {icon && <span>{icon}</span>}
+      <IconSlot node={icon} />
       {children}
+      <IconSlot node={iconRight} />
     </button>
   )
 }`
@@ -259,3 +329,297 @@ export const DATEPICKER_USAGE =
 />`
 
 export const DATEPICKER_SOURCE = '// Source lives in src/components/CustomDatePicker.jsx\n// ~570 lines — open the file directly for the full implementation.'
+
+// ─── Topbar ──────────────────────────────────────────────────────────────────
+
+export const TOPBAR_USAGE =
+`<Topbar />`
+
+export const TOPBAR_SOURCE =
+`function Topbar() {
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'center', gap: 16,
+      padding: '12px 16px', width: '100%',
+      backgroundColor: 'transparent',
+    }}>
+      {/* Left: back + sidebar (segmented) + map name */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
+        <div style={{
+          display: 'inline-flex', alignItems: 'center', height: 32,
+          border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)',
+          overflow: 'hidden', backgroundColor: 'var(--background)',
+        }}>
+          <button style={{
+            width: 32, height: 30, border: 'none', background: 'transparent',
+            color: 'var(--muted-foreground)', cursor: 'pointer',
+            display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <ChevronLeft size={14} />
+          </button>
+          <button style={{
+            width: 32, height: 30, border: 'none', background: 'transparent',
+            color: 'var(--muted-foreground)', cursor: 'pointer',
+            display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <PanelLeft size={14} />
+          </button>
+        </div>
+        <span style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--foreground)' }}>
+          Map name 01
+        </span>
+      </div>
+
+      {/* Centre: layer · search · filter · pointer */}
+      <div style={{
+        display: 'flex', alignItems: 'center', gap: 8,
+        flex: 1, justifyContent: 'center',
+      }}>
+        <ToolBtn icon={<Layers size={14} />} />
+        <div style={{ position: 'relative', width: 280 }}>
+          <Search size={13} style={{
+            position: 'absolute', left: 10, top: '50%',
+            transform: 'translateY(-50%)',
+            color: 'var(--muted-foreground)', pointerEvents: 'none',
+          }} />
+          <input placeholder="Search for places, POIs" style={{
+            width: '100%', padding: '7px 12px 7px 30px', height: 32,
+            fontSize: '0.8125rem', fontFamily: 'inherit',
+            backgroundColor: 'var(--background)', color: 'var(--foreground)',
+            border: '1px solid var(--border)',
+            borderRadius: 'var(--radius-sm)', outline: 'none',
+            boxSizing: 'border-box',
+          }} />
+        </div>
+        <ToolBtn icon={<SlidersHorizontal size={14} />} />
+        <ToolBtn icon={<MousePointer2 size={14} />} dropdown />
+      </div>
+
+      {/* Right: export */}
+      <div style={{ flexShrink: 0 }}>
+        <Btn variant="primary" size="sm" icon={<FileDown size={13} />}>
+          Export report
+        </Btn>
+      </div>
+    </div>
+  )
+}`
+
+// ─── Tool buttons ─────────────────────────────────────────────────────────────
+
+export const TOOLBTN_USAGE =
+`<ToolBtn icon={<Layers size={14} />} />
+<ToolBtn icon={<SlidersHorizontal size={14} />} dropdown />
+<ToolBtn icon={<Layers size={14} />} active />
+<ToolBtn icon={<SlidersHorizontal size={14} />} dropdown active />`
+
+export const TOOLBTN_SOURCE =
+`function ToolBtn({ icon, dropdown = false, active = false }) {
+  const [hovered, setHovered] = useState(false)
+  return (
+    <button
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        display: 'inline-flex', alignItems: 'center', gap: 3,
+        padding: '0 8px', height: 32,
+        backgroundColor: active || hovered ? 'var(--accent)' : 'transparent',
+        color: active ? 'var(--foreground)' : 'var(--muted-foreground)',
+        border: '1px solid var(--border)',
+        borderRadius: 'var(--radius-sm)', cursor: 'pointer',
+        transition: 'background-color var(--motion-fast), color var(--motion-fast)',
+      }}
+    >
+      {icon}
+      {dropdown && <ChevronDown size={11} />}
+    </button>
+  )
+}`
+
+// ─── Menu tools ───────────────────────────────────────────────────────────────
+
+export const MENUTOOL_USAGE =
+`<MenuTools />`
+
+export const MENUTOOL_SOURCE =
+`function MenuTools() {
+  const [active, setActive] = useState('Profile')
+  const items = [
+    { label: 'Profile',  shortcut: '⇧P', Icon: User    },
+    { label: 'Freehand', shortcut: 'F',  Icon: Pen     },
+    { label: 'Circle',   shortcut: 'C',  Icon: Circle  },
+    { label: 'Polygon',  shortcut: 'P',  Icon: Polygon },
+  ]
+
+  return (
+    <div style={{
+      width: 200, backgroundColor: 'var(--popover)',
+      border: '1px solid var(--border)', borderRadius: 'var(--radius-md)',
+      boxShadow: 'var(--shadow-lg)', padding: '4px 0',
+    }}>
+      {items.map(({ label, shortcut, Icon }) => (
+        <button key={label} onClick={() => setActive(label)} style={{
+          display: 'flex', alignItems: 'center', gap: 8,
+          width: '100%', padding: '7px 12px',
+          fontSize: '0.875rem', fontFamily: 'inherit',
+          backgroundColor: active === label ? 'var(--accent)' : 'transparent',
+          color: 'var(--foreground)', border: 'none', cursor: 'pointer',
+        }}>
+          <Icon size={14} style={{ color: 'var(--muted-foreground)' }} />
+          <span style={{ flex: 1 }}>{label}</span>
+          <kbd style={{ fontSize: '0.7rem', color: 'var(--muted-foreground)' }}>{shortcut}</kbd>
+        </button>
+      ))}
+    </div>
+  )
+}`
+
+// ─── Menu item ────────────────────────────────────────────────────────────────
+
+export const MENUITEM_USAGE =
+`<MenuItem label="Profile" shortcut="⇧⌘P" checked />
+<MenuItem label="Profile" shortcut="⇧⌘P" />
+<MenuItem label="Profile" shortcut="⇧⌘P" />
+<MenuItem label="Profile" shortcut="⇧⌘P" disabled />`
+
+export const MENUITEM_SOURCE =
+`function MenuItem({ label, shortcut, checked = false, disabled = false }) {
+  const [hovered, setHovered] = useState(false)
+  return (
+    <div
+      role="menuitem"
+      aria-checked={checked}
+      aria-disabled={disabled}
+      onMouseEnter={() => !disabled && setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        display: 'flex', alignItems: 'center', gap: 8,
+        padding: '0 12px', height: 32, minWidth: 200,
+        backgroundColor: hovered && !disabled ? 'var(--accent)' : 'transparent',
+        opacity: disabled ? 0.4 : 1,
+        cursor: disabled ? 'not-allowed' : 'pointer',
+        borderRadius: 'var(--radius-sm)',
+        transition: 'background-color var(--motion-fast)',
+        userSelect: 'none',
+      }}
+    >
+      <Check size={12} style={{
+        color: 'var(--primary)', flexShrink: 0,
+        opacity: checked ? 1 : 0,
+        transition: 'opacity var(--motion-fast)',
+      }} />
+      <span style={{ flex: 1, fontSize: '0.875rem', color: 'var(--foreground)' }}>{label}</span>
+      <kbd style={{ fontSize: '0.7rem', color: 'var(--muted-foreground)', fontWeight: 500 }}>{shortcut}</kbd>
+    </div>
+  )
+}`
+
+
+// ─── Data panel ──────────────────────────────────────────────────────────────
+
+export const DATAPANEL_USAGE =
+`<DataPanel />`
+
+export const DATAPANEL_SOURCE =
+`// 1:1 port of VIP-DS data-panel (Figma node 86:1426).
+// Width 380, padding 8, border + 12px radius, transparent bg.
+// Composed of: TabSelector · IconButton · DataLayer.
+
+function DataPanel() {
+  const [tab, setTab] = useState("Data")
+  return (
+    <div style={{
+      display: "flex", flexDirection: "column", width: 380,
+      maxHeight: 900, padding: 8,
+      backgroundColor: "transparent",
+      border: "1px solid var(--border)",
+      borderRadius: 12,
+      boxShadow: "0 1px 2px -1px rgba(0,0,0,0.1), 0 1px 3px 0 rgba(0,0,0,0.1)",
+      overflow: "hidden", boxSizing: "border-box",
+    }}>
+      <div style={{
+        position: "sticky", top: 0, width: "100%",
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+      }}>
+        <TabSelector tabs={["Data", "Zones"]} active={tab} onChange={setTab} />
+        <IconButton bordered icon={<Box size={16} />} ariaLabel="3D view" />
+      </div>
+
+      <div style={{ width: "100%" }}>
+        {/* Search — 48px tall, gap 10 */}
+        <div style={{ display: "flex", alignItems: "center", height: 48, gap: 10, padding: "0 12px" }}>
+          <Search size={16} style={{ color: "var(--muted-foreground)" }} />
+          <input placeholder="Search data" style={{
+            flex: 1, border: "none", outline: "none", background: "transparent",
+            fontSize: 14, fontWeight: 500, color: "var(--foreground)",
+          }} />
+        </div>
+
+        {/* Layers — gap 8 */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 8, width: "100%" }}>
+          <DataLayer label="Layer label" />
+          <DataLayer label="Layer label" />
+          <DataLayer label="Layer label" />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function DataLayer({ label }) {
+  const [visible, setVisible] = useState(true)
+  return (
+    <div style={{
+      display: "flex", flexDirection: "column", width: "100%",
+      backgroundColor: "var(--muted)",
+      border: "1px solid var(--border)",
+      borderRadius: "var(--radius-md)", overflow: "hidden",
+    }}>
+      <div style={{
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+        width: "100%", padding: "4px 6px",
+      }}>
+        <p style={{
+          flex: 1, margin: 0, padding: "7px 6px 8px 6px",
+          fontSize: 14, fontWeight: 500, color: "var(--muted-foreground)",
+        }}>{label}</p>
+        <IconButton
+          icon={visible ? <Eye size={16} /> : <EyeOff size={16} />}
+          ariaLabel={visible ? "Hide" : "Show"}
+        />
+      </div>
+    </div>
+  )
+}
+
+function TabSelector({ tabs, active, onChange }) {
+  return (
+    <div style={{
+      display: "inline-flex", padding: 2,
+      backgroundColor: "var(--background)", borderRadius: "var(--radius-md)",
+    }}>
+      {tabs.map(t => (
+        <button key={t} onClick={() => onChange(t)} style={{
+          height: 28, padding: "4px 12px", border: "none",
+          backgroundColor: t === active ? "var(--muted)" : "transparent",
+          color: "var(--foreground)",
+          borderRadius: "var(--radius-sm)", cursor: "pointer",
+          fontSize: 14, fontWeight: 500,
+        }}>{t}</button>
+      ))}
+    </div>
+  )
+}
+
+function IconButton({ icon, bordered = false, ariaLabel }) {
+  return (
+    <button aria-label={ariaLabel} style={{
+      width: 32, height: 32, padding: "8px 16px",
+      display: "inline-flex", alignItems: "center", justifyContent: "center",
+      borderRadius: "var(--radius-md)",
+      border: bordered ? "1px solid var(--border)" : "1px solid transparent",
+      backgroundColor: bordered ? "var(--background)" : "transparent",
+      cursor: "pointer", boxSizing: "border-box",
+    }}>{icon}</button>
+  )
+}`
